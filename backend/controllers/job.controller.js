@@ -4,6 +4,7 @@ import Job from "../models/job.model.js";
 export const getJobs = async (req, res) => {
   try {
     const jobs = await Job.find({});
+
     res.status(200).json({ success: true, data: jobs });
   } catch (error) {
     console.log("error in fetching jobs:", error.message);
