@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function NewJobModal({ onClose, handleAddJob }) {
+export default function NewJobModal({
+  onClose,
+  handleAddJob,
+  handleUpdateJob, // Prop for the update function
+  jobToEdit = null, // Prop holding the job data for editing
+}) {
   const [formData, setFormData] = useState({
     companyName: "",
     title: "",
@@ -8,7 +13,23 @@ export default function NewJobModal({ onClose, handleAddJob }) {
     applicationStatus: "Applied",
     notes: "",
   });
-  //updates our form data when user inputs anything
+
+  // This hook pre-fills the form if we are in "edit mode"
+  useEffect(() => {
+    if (jobToEdit) {
+      setFormData({
+        companyName: jobToEdit.companyName,
+        title: jobToEdit.title,
+        applicationDate: new Date(jobToEdit.applicationDate)
+          .toISOString()
+          .split("T")[0],
+        applicationStatus: jobToEdit.applicationStatus,
+        notes: jobToEdit.notes || "",
+      });
+    }
+  }, [jobToEdit]);
+
+  // Generic handler to update form state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -17,13 +38,19 @@ export default function NewJobModal({ onClose, handleAddJob }) {
     }));
   };
 
-  //Communicates with our backend when the users submits the form
+  // "Smart" submit handler for both creating and updating
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const url = jobToEdit
+      ? `http://localhost:8000/api/jobs/${jobToEdit._id}`
+      : "http://localhost:8000/api/jobs";
+
+    const method = jobToEdit ? "PUT" : "POST";
+
     try {
-      const response = await fetch("http://localhost:8000/api/jobs", {
-        method: "POST",
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -34,20 +61,32 @@ export default function NewJobModal({ onClose, handleAddJob }) {
         throw new Error("Something went wrong");
       }
 
-      const newJob = await response.json();
-      handleAddJob(newJob);
-      onClose();
+      const result = await response.json();
+
+      // Call the correct handler based on whether we were editing
+      if (jobToEdit) {
+        handleUpdateJob(result);
+      } else {
+        handleAddJob(result);
+      }
+
+      onClose(); // Close the modal on success
     } catch (error) {
-      console.error("Failed to create job", error);
+      console.error("Failed to submit job", error);
     }
   };
 
+  // A boolean flag to make the UI dynamic
+  const isEditing = Boolean(jobToEdit);
+
   return (
-    //The backdrop
     <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center">
-      {/* The modal Content Panel */}
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Add New Job</h2>
+        
+        <h2 className="text-2xl font-bold mb-6">
+          {isEditing ? "Edit Job" : "Add New Job"}
+        </h2>
+
         <form onSubmit={handleSubmit}>
           {/* Company Name */}
           <div className="mb-4">
@@ -121,7 +160,7 @@ export default function NewJobModal({ onClose, handleAddJob }) {
               value={formData.notes}
             ></textarea>
           </div>
-          {/* Form Action Button */}
+          {/* Form Action Buttons */}
           <div className="flex justify-end gap-4 mt-8">
             <button
               type="button"
@@ -134,7 +173,7 @@ export default function NewJobModal({ onClose, handleAddJob }) {
               type="submit"
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium"
             >
-              Add Job
+              {isEditing ? "Save Changes" : "Add Job"}
             </button>
           </div>
         </form>
