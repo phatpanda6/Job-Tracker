@@ -5,6 +5,7 @@ export default function NewJobModal({
   handleAddJob,
   handleUpdateJob, // Prop for the update function
   jobToEdit = null, // Prop holding the job data for editing
+  token,
 }) {
   const [formData, setFormData] = useState({
     companyName: "",
@@ -53,6 +54,7 @@ export default function NewJobModal({
         method: method,
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });

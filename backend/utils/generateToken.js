@@ -1,0 +1,11 @@
+import jwt from 'jsonwebtoken';
+
+const generateToken = (userId) => {
+  // jwt.sign() creates the token.
+  // It takes the payload (the data to store), the secret key, and options.
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: '30d', // The token will be valid for 30 days
+  });
+};
+
+export default generateToken;

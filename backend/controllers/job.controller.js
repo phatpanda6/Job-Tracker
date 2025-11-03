@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
-import Job from "../models/job.model.js";
+import Job from "../models/job.modal.js";
 
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({});
-
+    const jobs = await Job.find({ user: req.user._id });
     res.status(200).json({ success: true, data: jobs });
   } catch (error) {
     console.log("error in fetching jobs:", error.message);
@@ -13,18 +12,18 @@ export const getJobs = async (req, res) => {
 };
 
 export const createJob = async (req, res) => {
-  const job = req.body; //inputted by user
-
-  if (!job.companyName || !job.title || !job.applicationDate) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Please provide all fields" });
-  }
-
-  const newJob = new Job(job);
-
   try {
-    await newJob.save(); //saves the user inputted data into the database
+    const jobData = req.body;
+    if (!jobData.companyName || !jobData.title || !jobData.applicationDate) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please provide all required fields" });
+    }
+    const newJob = new Job({
+      ...jobData,
+      user: req.user._id,
+    });
+    await newJob.save();
     res.status(201).json({ success: true, data: newJob });
   } catch (error) {
     console.error("Error in Create job:", error.message);
@@ -34,21 +33,32 @@ export const createJob = async (req, res) => {
 
 export const updateJob = async (req, res) => {
   const { id } = req.params;
-
-  const job = req.body;
+  const jobData = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ success: false, message: "Invalid Job Id" });
   }
 
   try {
-    const updatedJob = await Job.findByIdAndUpdate(id, job, { new: true });
+    const job = await Job.findById(id);
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    // Security Check: Ensure the job belongs to the logged-in user
+    if (job.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ success: false, message: "User not authorized" });
+    }
+
+    const updatedJob = await Job.findByIdAndUpdate(id, jobData, { new: true });
     res.status(200).json({ success: true, data: updatedJob });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// --- THIS FUNCTION IS UPDATED FOR SECURITY ---
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
 
@@ -57,6 +67,17 @@ export const deleteProduct = async (req, res) => {
   }
 
   try {
+    const job = await Job.findById(id);
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    // Security Check: Ensure the job belongs to the logged-in user
+    if (job.user.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ success: false, message: "User not authorized" });
+    }
+    
     await Job.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Job deleted" });
   } catch (error) {

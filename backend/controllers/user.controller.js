@@ -1,4 +1,5 @@
 import User from "../models/user.modal.js"
+import generateToken from "../utils/generateToken.js"
 
 export const registerUser = async(req, res) => {
   try {
@@ -42,17 +43,17 @@ export const loginUser = async (req, res) => {
 
     //2. Checks if users exists AND password match
     if (user && (await user.matchPassword(password))) {
-      //more to do here
-
+      const token = generateToken(user._id)
       res.json({
         success: true, 
         data: {
           _id: user._id, 
           email: user.email,
+          token: token, 
         }
       })
     } else {
-      return res.status(400).json({success: false, message: "Incorrect password, please try again"})
+      return res.status(401).json({success: false, message: "Invalid email or password"})
     }
   } catch (error) {
     res.status(500).json({success: false, message: "Sever Error"})

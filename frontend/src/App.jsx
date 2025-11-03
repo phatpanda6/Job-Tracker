@@ -6,37 +6,55 @@ import JobList from "./components/JobList.jsx";
 import NewJobModal from "./components/NewJobModal.jsx";
 
 function App() {
-  // --- STATE MANAGEMENT ---
   const [jobsData, setJobsData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("All");
 
-  // --- DATA FETCHING ---
+  // Get the auth token from localStorage
+  const token = localStorage.getItem("authToken");
+
+  // --- DATA FETCHING (Authenticated) ---
   useEffect(() => {
-    fetch("http://localhost:8000/api/jobs")
-      .then((res) => res.json())
-      .then((response) => setJobsData(response.data))
-      .catch((error) => console.error("Failed to fetch jobs:", error));
-  }, []);
+    // Only fetch jobs if a token exists
+    if (token) {
+      fetch("http://localhost:8000/api/jobs", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Send the token
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Authorization failed");
+          return res.json();
+        })
+        .then((response) => {
+          setJobsData(response.data);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch jobs:", error);
+        });
+    }
+  }, [token]); // Re-run if token changes
 
   // --- MODAL CONTROLS ---
   const openAddJobModal = () => {
-    setJobToEdit(null); // Ensure we're not in edit mode
+    setJobToEdit(null);
     setIsModalOpen(true);
   };
 
   const openEditJobModal = (job) => {
-    setJobToEdit(job); // Set the job to be edited
+    setJobToEdit(job);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setJobToEdit(null); // Always reset jobToEdit when modal closes
+    setJobToEdit(null);
   };
 
-  // --- CRUD LOGIC ---
+  // --- CRUD LOGIC (Authenticated) ---
   const handleAddJob = (newJobResponse) => {
     setJobsData((prevJobsData) => [...prevJobsData, newJobResponse.data]);
   };
@@ -44,9 +62,7 @@ function App() {
   const handleUpdateJob = (updatedJobResponse) => {
     setJobsData((prevJobs) =>
       prevJobs.map((job) =>
-        job._id === updatedJobResponse.data._id
-          ? updatedJobResponse.data
-          : job
+        job._id === updatedJobResponse.data._id ? updatedJobResponse.data : job
       )
     );
   };
@@ -55,6 +71,9 @@ function App() {
     try {
       const response = await fetch(`http://localhost:8000/api/jobs/${jobId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`, // Add token to delete request
+        },
       });
       if (!response.ok) throw new Error("Failed to delete job");
       setJobsData((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
@@ -81,6 +100,7 @@ function App() {
             handleAddJob={handleAddJob}
             handleUpdateJob={handleUpdateJob}
             jobToEdit={jobToEdit}
+            token={token} // Pass the token to the modal
           />
         )}
 

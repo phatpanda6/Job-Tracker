@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId, // This stores a MongoDB User ID
+      required: true,
+      ref: "User", // This creates a reference to the 'User' model
+    },
     companyName: {
       type: String,
       required: true,
@@ -31,4 +36,4 @@ const jobSchema = new mongoose.Schema(
 
 const Job = mongoose.model("Job", jobSchema);
 
-export default Job; 
+export default Job;
