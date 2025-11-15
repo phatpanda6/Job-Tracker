@@ -1,2 +1,6 @@
 .env
 /backend/.env
+
+# should include .DS_Store
+# should also include node_modules
+# committing node_modules and pushing them to git is a smell, because the node_modules folder is large and so pushing it up slows down the push/pull cycle as well as git itself
