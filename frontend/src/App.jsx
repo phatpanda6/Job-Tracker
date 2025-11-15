@@ -8,7 +8,7 @@ import NewJobModal from "./components/NewJobModal.jsx";
 function App() {
   const [jobsData, setJobsData] = useState([]);
   // do you need both isModalOpen and jobToEdit? or can you 
-  // just tread the presence or absence of a job in jobToEdit as
+  // just treat the presence or absence of a job in jobToEdit as
   // the condition for whether you show the modal?
   // in general it's best to keep your state as small as possible
   // because state is the main source of UI bugs. less state = less bugs
