@@ -36,3 +36,5 @@ with open(file_path, "w") as f:
     json.dump(color_palette, f, indent=4)
 
 file_path
+
+// what's up with this file? can you just delete it? seems like this is python and not a JSON file.

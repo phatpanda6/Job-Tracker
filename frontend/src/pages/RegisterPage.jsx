@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function RegisterPage() {
+  // register and login state are very similar. when you have shared state/logic/handlers,
+  // that's a potential opportunity to write a custom hook for the shared logic
   const [formData, setFormData] = useState({
     email: "",
     password: "",

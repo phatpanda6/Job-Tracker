@@ -6,6 +6,7 @@ export const registerUser = async(req, res) => {
     const { email, password } = req.body; 
 
     //1. Check for required fields
+    // same feedback here re: validating the request body
     if (!email || !password) {
       return res.status(400).json({success: false, message: 'Please provide email and password'})
     }
@@ -39,6 +40,8 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body; 
 
     //1. Find the user by email
+    // another point in favor of moving validation into a shared helper - in this method you don't validate the request body,
+    // but in the register method you do!
     const user = await User.findOne({email})
 
     //2. Checks if users exists AND password match

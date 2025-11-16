@@ -22,3 +22,5 @@
     "nodemon": "^3.1.10"
   }
 }
+
+// this file should probably go directly in the `backend` folder along with the lockfile. similar to how you've structured the frontend folder, it's a self contained project.

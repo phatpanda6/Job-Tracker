@@ -7,6 +7,11 @@ import NewJobModal from "./components/NewJobModal.jsx";
 
 function App() {
   const [jobsData, setJobsData] = useState([]);
+  // do you need both isModalOpen and jobToEdit? or can you 
+  // just treat the presence or absence of a job in jobToEdit as
+  // the condition for whether you show the modal?
+  // in general it's best to keep your state as small as possible
+  // because state is the main source of UI bugs. less state = less bugs
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -18,6 +23,8 @@ function App() {
   useEffect(() => {
     // Only fetch jobs if a token exists
     if (token) {
+      // in general this URL should be set as an environment variable,
+      // since if you deploy the app `localhost:8000` won't be correct
       fetch("http://localhost:8000/api/jobs", {
         method: "GET",
         headers: {
@@ -69,6 +76,13 @@ function App() {
 
   const handleDeleteJob = async (jobId) => {
     try {
+      // generally better to move the implementation details of the fetch calls 
+      // to a separate file, like api.js. you could imagine importing a deleteJob
+      // method that just takes in the job id and does its thing. you could even 
+      // reference localStorage from the api file itself, so managing
+      // the token can be separated from rendering the UI. 
+
+      // you kind of explore this idea a bit with your auth context.
       const response = await fetch(`http://localhost:8000/api/jobs/${jobId}`, {
         method: "DELETE",
         headers: {
@@ -120,3 +134,5 @@ function App() {
 }
 
 export default App;
+
+// random comment: overall, a very nice job breaking down the UI into components!

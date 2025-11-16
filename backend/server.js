@@ -9,6 +9,8 @@ import jobRoutes from "./routes/job.route.js";
 import userRoutes from "./routes/user.route.js";
 
 // Explicitly configure dotenv to find the .env file in the backend folder
+// i'm a bit surprised you need this configuration to load the env file
+// maybe it's because your package.json isn't in the backend director?
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "./.env") });

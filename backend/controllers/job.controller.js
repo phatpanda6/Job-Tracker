@@ -13,6 +13,8 @@ export const getJobs = async (req, res) => {
 
 export const createJob = async (req, res) => {
   try {
+    // this type of validation is a good candidate for middleware
+    // or a separate utility
     const jobData = req.body;
     if (!jobData.companyName || !jobData.title || !jobData.applicationDate) {
       return res
@@ -47,6 +49,9 @@ export const updateJob = async (req, res) => {
     }
 
     // Security Check: Ensure the job belongs to the logged-in user
+    // another candidate for middleware here. 
+    // basically any time i duplicate code across multiple routes,
+    // i think about refactoring to middleware
     if (job.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ success: false, message: "User not authorized" });
     }
@@ -59,6 +64,7 @@ export const updateJob = async (req, res) => {
 };
 
 // --- THIS FUNCTION IS UPDATED FOR SECURITY ---
+// why deleteProduct and not deleteJob?
 export const deleteProduct = async (req, res) => {
   const { id } = req.params;
 
